@@ -13,8 +13,8 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-@Table(name = "data_files")
-public class DataFiles {
+@Table(name = "data_file")
+public class DataFile {
 
     @Id
     @Column(name = "data_id")

@@ -1,12 +1,12 @@
 package technikal.task.fishmarket.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import technikal.task.fishmarket.entity.DataFiles;
+import technikal.task.fishmarket.entity.DataFile;
 
 /**
  * @author Nikolay Boyko
  */
 
-public interface FileNamesRepository extends JpaRepository<DataFiles, Integer> {
+public interface DataFilesRepository extends JpaRepository<DataFile, Integer> {
 
 }

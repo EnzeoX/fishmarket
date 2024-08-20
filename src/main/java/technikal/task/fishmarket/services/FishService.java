@@ -6,15 +6,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import technikal.task.fishmarket.entity.DataFile;
 import technikal.task.fishmarket.entity.Fish;
 import technikal.task.fishmarket.exception.exceptions.FishCreationException;
 import technikal.task.fishmarket.models.FishDto;
+import technikal.task.fishmarket.repository.DataFilesRepository;
 import technikal.task.fishmarket.repository.FishRepository;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +28,7 @@ import java.util.List;
 public class FishService {
 
     private final FishRepository fishRepository;
+    private final DataFilesRepository dataFilesRepository;
     private final StorageService storageService;
 
     private final Sort defaultValue = Sort.by(Sort.Direction.DESC, "id");
@@ -39,7 +40,7 @@ public class FishService {
     public void addFish(FishDto fishDto, BindingResult result) {
         if (fishDto == null) throw new NullPointerException("Provided fishDto is null");
 
-        if (fishDto.getImageFile() == null || fishDto.getImageFile().length == 0) {
+        if (fishDto.getImageFiles() == null || fishDto.getImageFiles().length == 0) {
             result.addError(new FieldError("fishDto", "imageFile", "Потрібне фото рибки"));
         }
 
@@ -55,25 +56,28 @@ public class FishService {
         fish.setPrice(fishDto.getPrice());
         fish.setAttachedFiles(new ArrayList<>());
 
-
+        List<DataFile> dataFiles = Arrays.stream(fishDto.getImageFiles())
+                .map(data -> {
+                    DataFile dataFile = new DataFile();
+                    dataFile.setFish(fish);
+                    dataFile.setFileType(data.getContentType());
+                    dataFile.setSaveDate(date);
+                    dataFile.setFileName(date.getTime() + "_" + data.getOriginalFilename());
+                    fish.getAttachedFiles().add(dataFile);
+                    return dataFile;
+                })
+                .toList();
         fishRepository.save(fish);
-
-        storageService.saveImages(fishDto.getImageFile(), date);
-
-
+        dataFilesRepository.saveAll(dataFiles);
+        storageService.saveImages(fishDto.getImageFiles(), date);
     }
 
     public void deleteFish(int id) {
-        try {
-
-            Fish fish = fishRepository.findById(id).orElseThrow(() -> new NullPointerException("Fish by provided id not found"));
-
-//            Path imagePath = Paths.get("public/images/" + fish.getImageFileName());
-//            Files.delete(imagePath);
-            fishRepository.delete(fish);
-
-        } catch (Exception ex) {
-            System.out.println("Exception: " + ex.getMessage());
-        }
+        Fish fish = fishRepository.findById(id).orElseThrow(() -> new NullPointerException("Fish by provided id not found"));
+        List<String> fileNames = fish.getAttachedFiles().stream()
+                .map(DataFile::getFileName)
+                .toList();
+        storageService.deleteImages(fileNames);
+        fishRepository.delete(fish);
     }
 }

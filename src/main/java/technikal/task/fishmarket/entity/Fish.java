@@ -24,6 +24,6 @@ public class Fish {
 //	private String imageFileName;
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "fish", cascade = CascadeType.ALL)
-	private List<DataFiles> attachedFiles;
+	private List<DataFile> attachedFiles;
 
 }

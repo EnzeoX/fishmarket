@@ -11,12 +11,11 @@ import jakarta.validation.constraints.NotEmpty;
 @Getter
 @Setter
 public class FishDto {
-	
 
 	@NotEmpty(message = "потрібна назва рибки")
 	private String name;
 	@Min(0)
 	private double price;
-	private MultipartFile[] imageFile;
+	private MultipartFile[] imageFiles;
 
 }
