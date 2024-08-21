@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StorageService {
 
-    private static final String IMAGE_DIRECTORY = "public/image";
+    private static final String IMAGE_DIRECTORY = "public/images/";
 
     //TODO find a way to save and delete files/images properly by their names
     public void saveImage(MultipartFile image, Date date) {
@@ -57,8 +57,6 @@ public class StorageService {
                         log.error(e.getMessage());
                     }
                 });
-
-
     }
 
 }

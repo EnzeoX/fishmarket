@@ -1,4 +1,4 @@
-package technikal.task.fishmarket.models;
+package technikal.task.fishmarket.dto;
 
 import lombok.Getter;
 import lombok.Setter;

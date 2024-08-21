@@ -2,6 +2,7 @@ package technikal.task.fishmarket.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
@@ -14,10 +15,11 @@ import java.util.Date;
 @Getter
 @Setter
 @Table(name = "data_file")
+@NoArgsConstructor
 public class DataFile {
 
     @Id
-    @Column(name = "data_id")
+    @Column(name = "data_id", updatable = false, nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
