@@ -36,16 +36,8 @@ public class FishService {
     }
 
     @Transactional
-    public void addFish(FishDto fishDto, BindingResult result) {
+    public void addFish(FishDto fishDto) {
         if (fishDto == null) throw new NullPointerException("Provided fishDto is null");
-
-        if (fishDto.getImageFiles() == null || fishDto.getImageFiles().length == 0) {
-            result.addError(new FieldError("fishDto", "imageFile", "Потрібне фото рибки"));
-        }
-
-        if (result.hasErrors()) {
-            throw new FishCreationException(result);
-        }
 
         Date date = new Date();
         Fish fish = new Fish();
