@@ -22,9 +22,9 @@ public class ControllerExceptionAdvice {
         ModelAndView view;
         switch (exceptionName) {
             case "FishCreationException":
-                return new ModelAndView("redirect:/abc.htm");
+                return new ModelAndView("redirect:/abc.htm"); // ?
             case "BadCredentialsException":
-                view = new ModelAndView("redirect:/api/v1/user/login");
+                view = new ModelAndView("redirect:/user/login");
                 redirectAttributes.addFlashAttribute("errorMessage", "Невірний логін чи пароль");
                 return view;
             default:

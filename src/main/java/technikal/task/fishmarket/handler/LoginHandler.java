@@ -1,4 +1,4 @@
-package technikal.task.fishmarket.config.interceptor;
+package technikal.task.fishmarket.handler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -20,7 +20,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthHandler implements AuthenticationSuccessHandler {
+public class LoginHandler implements AuthenticationSuccessHandler {
 
     private final JwtUtils jwtUtils;
 
@@ -31,11 +31,11 @@ public class AuthHandler implements AuthenticationSuccessHandler {
         String username = authentication.getName();
         String jwtToken = jwtUtils.generateToken(username);
 
-        Cookie cookie = new Cookie("jwt", jwtToken);
+        Cookie cookie = new Cookie(JwtUtils.JWT_COOKIE_NAME, jwtToken);
         cookie.setHttpOnly(true); // To prevent XSS attacks
         cookie.setSecure(true);   // Use true in production for HTTPS
         cookie.setPath("/");
-        cookie.setMaxAge(10 * 60 * 60); // 10 hours
+        cookie.setMaxAge(JwtUtils.accessTokenValidity); // 10 hours
 
         response.addCookie(cookie);
         response.sendRedirect("/fish");

@@ -2,7 +2,6 @@ package technikal.task.fishmarket.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +26,9 @@ public class JwtUtils {
     private String SECRET_KEY;
 
     @Value("${token.access.validity}")
-    private long accessTokenValidity;
+    public static int accessTokenValidity;
+
+    public static final String JWT_COOKIE_NAME = "jwt";
 
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);

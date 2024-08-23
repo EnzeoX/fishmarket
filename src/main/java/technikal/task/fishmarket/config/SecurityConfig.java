@@ -1,7 +1,6 @@
 package technikal.task.fishmarket.config;
 
 import jakarta.servlet.DispatcherType;
-import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,9 +14,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import technikal.task.fishmarket.config.interceptor.AuthHandler;
-import technikal.task.fishmarket.config.interceptor.JwtAuthenticationFilter;
-import technikal.task.fishmarket.config.interceptor.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import technikal.task.fishmarket.config.interceptor.FilterExceptionInterceptor;
+import technikal.task.fishmarket.config.interceptor.JwtAuthorizationFilter;
 
 /**
  * @author Nikolay Boyko
@@ -29,46 +28,42 @@ import technikal.task.fishmarket.config.interceptor.LogoutHandler;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final AuthHandler authHandler;
-    private final LogoutHandler logoutHandler;
-
     @Value("${spring.security.enabled}")
     private boolean isSecurityEnabled;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            JwtAuthorizationFilter jwtAuthorizationFilter,
+            HttpSecurity httpSecurity,
+            FilterExceptionInterceptor filterExceptionInterceptor) throws Exception {
+
         if (isSecurityEnabled) {
-            log.info("Spring security enabled");
-            http
+            httpSecurity
                     .csrf(AbstractHttpConfigurer::disable)
-                    .headers(header -> header
-                            .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin
-                            ))
+                    .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
+                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers( "/favicon.ico").permitAll()
-                            .requestMatchers("/h2-console/**").permitAll()
-                            .requestMatchers("/images/**").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/v1/user/**").permitAll()
-                            .requestMatchers(HttpMethod.POST, "/api/v1/user/**").permitAll()
-                            .requestMatchers(HttpMethod.POST, "/fish/create").hasAuthority("ADMIN")
-                            .requestMatchers(HttpMethod.GET, "/fish/create").hasAuthority("ADMIN")
-                            .requestMatchers("/fish").permitAll()
+                            .requestMatchers("/","/favicon.ico", "/h2-console/**", "/images/**", "/fish").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/user/**").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/fish/create").hasRole("ADMIN")
+                            .requestMatchers(HttpMethod.POST, "/fish/create").hasRole("ADMIN")
                             .anyRequest().authenticated()
                     )
-                    .formLogin(form -> form
-                            .loginPage("/api/v1/user/login")
-                            .successHandler(authHandler)
-                            .permitAll())
+//                    .formLogin(form -> form
+//                            .loginPage("/user/login")
+//                            .failureForwardUrl("/user/login?error")
+//                    )
                     .logout(logout -> logout
-                            .logoutUrl("/api/v1/user/logout")
-                            .logoutSuccessHandler(logoutHandler)
-                            .permitAll()
+                            .logoutUrl("/user/logout")
+                            .logoutSuccessUrl("/user/login")
                     )
-                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                    .addFilterBefore(filterExceptionInterceptor, LogoutFilter.class)
+                    .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
+
         } else {
-            http
+            // configure
+            httpSecurity
                     .csrf(AbstractHttpConfigurer::disable)
                     .authorizeHttpRequests(auth -> auth
                             .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
@@ -78,6 +73,66 @@ public class SecurityConfig {
                     )
                     .httpBasic(AbstractHttpConfigurer::disable);
         }
-        return http.build();
+        return httpSecurity.build();
     }
+
+//    private final CustomUserDetailsService userDetailsService;
+//    private final JwtAuthorizationFilter jwtAuthorizationFilter;
+//    private final LoginHandler loginHandler;
+//    private final LogoutHandler logoutHandler;
+//
+//    private final AuthenticationProvider authenticationProvider;
+//
+//    @Value("${spring.security.enabled}")
+//    private boolean isSecurityEnabled;
+//
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http, FilterExceptionInterceptor filterExceptionInterceptor) throws Exception {
+//        if (isSecurityEnabled) {
+//            http
+//                    .csrf(AbstractHttpConfigurer::disable)
+//                    .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
+//                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                    .authorizeHttpRequests(auth -> auth
+//                            .requestMatchers( "/favicon.ico", "/h2-console/**", "/images/**").permitAll()
+//                            .requestMatchers(HttpMethod.GET, "/api/v1/user/**").permitAll()
+//                            .requestMatchers(HttpMethod.POST, "/api/v1/user/**").permitAll()
+//                            .requestMatchers(HttpMethod.POST, "/fish/create").hasAuthority("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/fish/create").hasAuthority("ADMIN")
+//                            .requestMatchers("/fish").permitAll()
+//                            .anyRequest().authenticated()
+//                    )
+//                    .formLogin(form -> form
+//                            .loginPage("/api/v1/user/login")
+//                            .successHandler(loginHandler)
+//                            .successForwardUrl("/fish")
+//                        .permitAll()
+//                    )
+////                    .formLogin(form -> form
+////                            .loginPage("/api/v1/user/login")
+////                            .failureForwardUrl("/api/v1/user/login")
+////                            .successHandler(loginHandler)
+////                            .permitAll())
+//                    .logout(logout -> logout
+//                            .logoutUrl("/api/v1/user/logout")
+//                            .deleteCookies(JwtUtils.JWT_COOKIE_NAME)
+//                            .logoutSuccessUrl("/api/v1/user/login")
+//                            .permitAll()
+//                    )
+//                    .authenticationProvider(authenticationProvider)
+//                    .addFilterBefore(filterExceptionInterceptor, LogoutFilter.class)
+//                    .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
+//        } else {
+//            http
+//                    .csrf(AbstractHttpConfigurer::disable)
+//                    .authorizeHttpRequests(auth -> auth
+//                            .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
+//                            .requestMatchers("/images/").permitAll()
+//                            .requestMatchers(HttpMethod.GET, "/**").permitAll()
+//                            .requestMatchers(HttpMethod.POST, "/**").permitAll()
+//                    )
+//                    .httpBasic(AbstractHttpConfigurer::disable);
+//        }
+//        return http.build();
+//    }
 }

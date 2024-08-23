@@ -29,7 +29,7 @@
 <body>
 <div class="col-md-8 w-25 p-3 mx-auto rounded border p-4 m-4">
     <h2 class="text-center mb-5">REGISTRATION</h2>
-    <form class="d-flex flex-column" th:action="@{/api/v1/user/registration}" th:object="${userForm}" method="post">
+    <form class="d-flex flex-column" th:action="@{/user/registration}" th:object="${userForm}" method="post">
         <div class="d-inline-flex p-2 justify-content-center align-items-center">
             <label style="padding-right: 2%">Username</label>
             <input type="text" name="username" th:field="*{username}" required/>
