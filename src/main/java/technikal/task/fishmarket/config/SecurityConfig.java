@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -16,23 +15,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import technikal.task.fishmarket.config.filters.JwtAuthorizationFilter;
-import technikal.task.fishmarket.config.filters.JwtTokenGeneratorFilter;
-import technikal.task.fishmarket.config.handlers.AccessDeniedImplHandler;
-import technikal.task.fishmarket.config.handlers.AuthSuccessHandler;
-import technikal.task.fishmarket.config.handlers.LoginSuccessHandler;
-import technikal.task.fishmarket.config.handlers.LogoutHandler;
 import technikal.task.fishmarket.config.interceptor.FilterExceptionInterceptor;
-import technikal.task.fishmarket.utils.JwtUtils;
 
 /**
  * @author Nikolay Boyko
@@ -49,22 +37,13 @@ public class SecurityConfig {
     @Value("${spring.security.enabled}")
     private boolean isSecurityEnabled;
 
-    private final LogoutHandler logoutHandler;
-//    private final JwtAuthorizationFilter filter;
     private final UserDetailsService userDetailsService;
-    private final AuthSuccessHandler authSuccessHandler;
-//    private final AuthenticationProvider authenticationProvider;
     private final FilterExceptionInterceptor filterExceptionInterceptor;
 
 
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity
-//                                                   AuthenticationManager manager,
-//                                                   JwtTokenGeneratorFilter jwtTokenGeneratorFilter
-    ) throws Exception {
-//        jwtTokenGeneratorFilter.setAuthenticationManager(manager);
-//        jwtTokenGeneratorFilter.setAuthenticationSuccessHandler(authSuccessHandler);
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         if (isSecurityEnabled) {
             httpSecurity
 
@@ -76,6 +55,7 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.POST, "/user/**").permitAll()
                             .requestMatchers(HttpMethod.POST, "/fish/create").hasAuthority("ADMIN")
                             .requestMatchers(HttpMethod.GET, "/fish/create").hasAuthority("ADMIN")
+                            .requestMatchers(HttpMethod.GET, "/fish/delete/**").hasAuthority("ADMIN")
                             .anyRequest().authenticated()
                     )
                     .formLogin(form -> form
@@ -88,41 +68,10 @@ public class SecurityConfig {
                             .deleteCookies("JSESSIONID")
                             .logoutSuccessUrl("/fish")
                             .invalidateHttpSession(true)
-//                            .logoutSuccessHandler(logoutHandler)
                             .permitAll()
                     )
                     .authenticationProvider(authenticationProvider())
                     .addFilterBefore(filterExceptionInterceptor, BasicAuthenticationFilter.class);
-//                    .exceptionHandling(exception -> exception
-//                            .accessDeniedPage("error/unauthorizedError"));
-//                    .exceptionHandling(exception -> exception
-//                    .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
-//                    .sessionManagement(managementConfigurer -> managementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-//                    .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
-//                    .addFilterBefore(filterExceptionInterceptor, LogoutFilter.class)
-//                    .addFilter(jwtTokenGeneratorFilter);
-
-
-//                    .csrf(AbstractHttpConfigurer::disable)
-////                    .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-//                    .authorizeHttpRequests(auth -> auth
-//                            .requestMatchers(ALLOWED_URLS).permitAll()
-//                            .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
-//                            .requestMatchers(HttpMethod.POST, "/user/**").permitAll()
-//                            .requestMatchers(HttpMethod.GET, "/fish/create").hasRole("ADMIN")
-//                            .requestMatchers(HttpMethod.POST, "/fish/create").hasRole("ADMIN")
-//                            .anyRequest().authenticated()
-//                    )
-//                    .authenticationProvider(authenticationProvider)
-////                    .logout(logout -> logout
-////                            .logoutUrl("/user/logout")
-////                            .logoutSuccessUrl("/user/login")
-////                    )
-//                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                    .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
-//                    .addFilterBefore(filterExceptionInterceptor, LogoutFilter.class)
-//                    .exceptionHandling(exception -> exception
-//                    .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
 
         } else {
             // configure

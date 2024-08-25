@@ -14,6 +14,10 @@
             z-index: 999;
         }
 
+        img {
+            border-radius: 5px;
+        }
+
         .image-container {
             position: relative;
             display: inline-block;
@@ -56,7 +60,7 @@
 </header>
 <div class="container">
     <a sec:authorize="hasAuthority('ADMIN')" class="btn btn-success" href="/fish/create">Додати рибки</a>
-    <table class="table" th:if="${not #lists.isEmpty(fishlist)}">
+    <table class="table text-center" th:if="${not #lists.isEmpty(fishlist)}">
         <thead>
         <tr>
             <th>#</th>
@@ -64,7 +68,7 @@
             <th>Ціна</th>
             <th>Дата вилову</th>
             <th>Фото</th>
-            <th></th>
+            <th sec:authorize="hasAuthority('ADMIN')"></th>
         </tr>
         </thead>
         <tbody>
@@ -80,8 +84,8 @@
                     <img class="center-block" th:src="@{'/images/'+${data.fileName}}" alt="..." width="50"/>
                 </div>
             </td>
-            <td class="align-middle">
-                <a sec:authorize="hasAuthority('ADMIN')" class="btn btn-danger btn-sm"
+            <td sec:authorize="hasAuthority('ADMIN')" class="align-middle">
+                <a class="btn btn-danger btn-sm"
                    th:href="@{/fish/delete(id=${fish.id})}"
                    onclick="return confirm('Ви впевнені?')">Прибрати</a>
             </td>
