@@ -15,17 +15,10 @@ import java.io.IOException;
  */
 
 @Component
-public class LogoutHandler implements LogoutSuccessHandler {
+public class CustomLogoutHandler implements LogoutSuccessHandler {
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        Cookie cookie = new Cookie("jwt", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-
-        response.addCookie(cookie);
         response.sendRedirect("/fish");
     }
 }

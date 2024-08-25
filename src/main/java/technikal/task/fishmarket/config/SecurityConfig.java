@@ -10,17 +10,26 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import technikal.task.fishmarket.config.filters.CustomLogoutFilter;
+import technikal.task.fishmarket.config.filters.JwtAuthorizationFilter;
+import technikal.task.fishmarket.config.filters.JwtTokenGeneratorFilter;
+import technikal.task.fishmarket.config.handlers.CustomLogoutHandler;
 import technikal.task.fishmarket.config.interceptor.FilterExceptionInterceptor;
+import technikal.task.fishmarket.utils.JwtUtils;
 
 /**
  * @author Nikolay Boyko
@@ -37,16 +46,16 @@ public class SecurityConfig {
     @Value("${spring.security.enabled}")
     private boolean isSecurityEnabled;
 
+    private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
     private final FilterExceptionInterceptor filterExceptionInterceptor;
 
-
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, AuthenticationManager manager) throws Exception {
+        JwtTokenGeneratorFilter jwtTokenGeneratorFilter = new JwtTokenGeneratorFilter(manager, jwtUtils);
+        JwtAuthorizationFilter jwtAuthorizationFilter = new JwtAuthorizationFilter(jwtUtils, userDetailsService);
         if (isSecurityEnabled) {
             httpSecurity
-
                     .csrf(AbstractHttpConfigurer::disable)
                     .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                     .authorizeHttpRequests(auth -> auth
@@ -58,20 +67,15 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/fish/delete/**").hasAuthority("ADMIN")
                             .anyRequest().authenticated()
                     )
-                    .formLogin(form -> form
-                            .loginPage("/user/login")
-                            .successForwardUrl("/fish")
-                            .failureUrl("/user/login?error=true")
-                            .permitAll())
                     .logout(logout -> logout
                             .logoutUrl("/user/logout")
-                            .deleteCookies("JSESSIONID")
-                            .logoutSuccessUrl("/fish")
-                            .invalidateHttpSession(true)
-                            .permitAll()
+                            .deleteCookies(JwtUtils.JWT_COOKIE_NAME)
+                            .logoutSuccessHandler(new CustomLogoutHandler())
                     )
-                    .authenticationProvider(authenticationProvider())
-                    .addFilterBefore(filterExceptionInterceptor, BasicAuthenticationFilter.class);
+                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    .addFilterBefore(jwtTokenGeneratorFilter, UsernamePasswordAuthenticationFilter.class)
+                    .addFilterBefore(jwtAuthorizationFilter, JwtTokenGeneratorFilter.class)
+                    .addFilterBefore(filterExceptionInterceptor, LogoutFilter.class);
 
         } else {
             // configure
@@ -100,8 +104,12 @@ public class SecurityConfig {
         return authProvider;
     }
 
+    //    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+//        return config.getAuthenticationManager();
+//    }
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class).build();
     }
 }

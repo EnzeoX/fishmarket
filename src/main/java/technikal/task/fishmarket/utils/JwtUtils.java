@@ -50,7 +50,7 @@ public class JwtUtils {
                 .claims(extraClaims)
                 .subject(username)
                 .issuedAt(Date.from(Instant.now()))
-                .expiration(Date.from(Instant.now().plusMillis(accessTokenValidity)))
+                .expiration(Date.from(Instant.now().plusMillis(60 * 1000)))
                 .signWith(getSignKey())
                 .compact();
     }

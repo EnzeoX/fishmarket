@@ -22,13 +22,18 @@ public class FilterExceptionHandler {
 
     public void handleError(HttpServletRequest request, HttpServletResponse response, RuntimeException e) throws IOException {
         log.error("{}, error {}", this.getClass().getSimpleName(), e.getClass().getSimpleName());
+        if (e.getStackTrace() != null && e.getStackTrace().length > 0) {
+            for (StackTraceElement element : e.getStackTrace()) {
+                log.error(element.toString());
+            }
+        }
         switch (e.getClass().getSimpleName()) {
             case "ExpiredJwtException":
                 log.error("Token expired");
                 request.setAttribute("error", "Сессія не валідна");
                 response.addCookie(getEmptyCookie());
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.sendError(HttpStatus.UNAUTHORIZED.value(), "/user/login");
+                response.sendRedirect("/user/login");
                 break;
             case "MalformedJwtException":
             case "AuthenticationException":

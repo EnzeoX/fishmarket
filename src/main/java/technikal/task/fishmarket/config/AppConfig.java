@@ -10,11 +10,16 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import technikal.task.fishmarket.config.filters.CustomLogoutFilter;
 import technikal.task.fishmarket.config.filters.JwtAuthorizationFilter;
+import technikal.task.fishmarket.config.handlers.CustomLogoutHandler;
 import technikal.task.fishmarket.repository.UserRepository;
 import technikal.task.fishmarket.services.impl.UserDetailsServiceImpl;
 import technikal.task.fishmarket.utils.JwtUtils;
+
+import java.util.List;
 
 /**
  * @author Nikolay Boyko
@@ -27,7 +32,6 @@ public class AppConfig {
     public JwtUtils jwtUtils() {
         return new JwtUtils();
     }
-
 
 //    @Bean
 //    public AuthenticationProvider authenticationProvider(PasswordEncoder bCryptPasswordEncoder, UserDetailsService userService) {
