@@ -1,8 +1,11 @@
 package technikal.task.fishmarket.services;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -33,6 +36,26 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @PostConstruct
+    public void addUser() {
+        UserEntity entity = UserEntity.builder()
+                .username("1")
+                .password(passwordEncoder.encode("1"))
+                .role(Role.USER)
+                .build();
+
+        UserEntity entityAdmin = UserEntity.builder()
+                .username("2")
+                .password(passwordEncoder.encode("2"))
+                .role(Role.ADMIN)
+                .build();
+        userRepository.save(entity);
+        log.info("Default user {} added", entity);
+        userRepository.save(entityAdmin);
+        log.info("Default admin user {} added", entityAdmin);
+
+    }
+
     public void registerUser(String username, String password) {
         UserEntity userEntity = UserEntity.builder()
                 .username(username)
@@ -42,22 +65,19 @@ public class UserService {
         userRepository.save(userEntity);
     }
 
+    public Cookie authorizeUserWithCookie(UserForm userForm) {
+        return userHandler.authUserCookie(userForm);
+    }
+
+    public String authorizeUserWithToken(UserForm userForm) {
+        return userHandler.authUserToken(userForm);
+    }
+
     public UserEntity getUserByUsername(String username) {
         return userRepository.findUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
-    // Provide cookie here or just provide token and then create cookie in a controller, hmmm
-    public Cookie authenticateUser(UserForm userForm) {
-        userHandler.authenticateUser(userForm);
-        String jwtToken = userHandler.generateTokenForUser(userForm);
-        Cookie cookie = new Cookie(JwtUtils.JWT_COOKIE_NAME, jwtToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(JwtUtils.accessTokenValidity);
-
-        return cookie;
+    public void authUser(UserForm userForm) {
+        userHandler.authUser(userForm);
     }
-
-
 }

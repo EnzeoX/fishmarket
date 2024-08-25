@@ -5,8 +5,10 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import technikal.task.fishmarket.dto.UserForm;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
@@ -53,6 +55,11 @@ public class JwtUtils {
                 .compact();
     }
 
+    public ResponseCookie generateJwtCookie(UserForm userPrincipal) {
+        String jwt = generateToken(userPrincipal.getUsername());
+        return generateCookie(JWT_COOKIE_NAME, jwt, "/api");
+    }
+
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && isTokenExpired(token);
@@ -87,6 +94,10 @@ public class JwtUtils {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    private ResponseCookie generateCookie(String name, String value, String path) {
+        return ResponseCookie.from(name, value).path(path).maxAge(accessTokenValidity).httpOnly(true).build();
     }
 
 }

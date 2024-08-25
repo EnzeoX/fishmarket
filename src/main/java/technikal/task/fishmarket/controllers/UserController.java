@@ -1,6 +1,6 @@
 package technikal.task.fishmarket.controllers;
 
-import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,28 +25,37 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping({"/login"})
-    public String showLoginPage(Model model) {
+    @GetMapping("/login")
+    public String showLoginPage(
+            @RequestParam(value = "error", required = false) String error, Model model) {
+        log.info("Login called");
+        if (error != null && !error.isEmpty()) {
+            model.addAttribute("errorMessage", "Invalid username or password");
+            return "login";
+        }
         UserForm form = new UserForm();
         model.addAttribute("userForm", form);
         return "login";
     }
 
-    @PostMapping("/login")
-    public String authUser(@Valid @ModelAttribute("userForm") UserForm userForm, BindingResult result, HttpServletResponse response) {
+//    @PostMapping("/login")
+//    public String authUser(@Valid @ModelAttribute("userForm") UserForm userForm, BindingResult result) {
+//
+//        log.info("Performing auth, provided username and password: {}, {}", userForm.getUsername(), userForm.getPassword());
+//        if (result.hasErrors()) {
+//            return "login";
+//        }
+////        userService.authUser(userForm);
+//        return "redirect:/fish";
+//    }
 
-        log.info("Performing auth, provided username and password: {}, {}", userForm.getUsername(), userForm.getPassword());
-        if (result.hasErrors()) {
-            return "login";
-        }
-        Cookie cookie = userService.authenticateUser(userForm);
-        log.info("Cookie: name: {}, value: {}", cookie.getName(), cookie.getValue());
-        response.addCookie(cookie);
-        log.info("Success AUTH");
+    @PostMapping("/logout")
+    public String performLogout() {
+        log.info("Logging out a user");
         return "redirect:/fish";
     }
 
-    @GetMapping({"/registration"})
+    @GetMapping("/registration")
     public String showRegistrationPage(Model model) {
         UserForm form = new UserForm();
         model.addAttribute("userForm", form);
@@ -69,6 +78,11 @@ public class UserController {
 
         return new ModelAndView("redirect:login");
     }
+
+//    @GetMapping("/denied")
+//    public String accessDenied() {
+//        return "403";
+//    }
 
 //    @PostMapping("/refresh-token")
 //    public ModelAndView refreshToken() {

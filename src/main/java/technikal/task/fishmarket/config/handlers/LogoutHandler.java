@@ -1,4 +1,4 @@
-package technikal.task.fishmarket.handler;
+package technikal.task.fishmarket.config.handlers;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

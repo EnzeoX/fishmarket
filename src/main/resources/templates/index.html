@@ -43,7 +43,7 @@
                 <a class="btn btn-info" role="button" th:href="@{/user/login}">Логін</a>
             </li>
             <li class="nav-item" sec:authorize="isAuthenticated()">
-                <div class="d-inline-flex p-2 justify-content-center align-items-center" >
+                <div class="d-inline-flex p-2 justify-content-center align-items-center">
                     <h10>Вітаю, <span sec:authentication="name"></span>!</h10>
                 </div>
             </li>
@@ -55,8 +55,7 @@
 
 </header>
 <div class="container">
-<!--    <h1 class="text-center my-4">Рибка на продаж</h1>-->
-    <a  sec:authorize="hasAuthority('ADMIN')" class="btn btn-success" href="/fish/create">Додати рибки</a>
+    <a sec:authorize="hasAuthority('ADMIN')" class="btn btn-success" href="/fish/create">Додати рибки</a>
     <table class="table" th:if="${not #lists.isEmpty(fishlist)}">
         <thead>
         <tr>
@@ -70,10 +69,10 @@
         </thead>
         <tbody>
         <tr th:each="fish : ${fishlist}">
-            <td th:text="${fish.id}"></td>
-            <td th:text="${fish.name}"></td>
-            <td th:text="${fish.price} + '₴'"></td>
-            <td th:text="${fish.catchDate.toString().substring(0,10)}"></td>
+            <td class="align-middle" th:text="${fish.id}"></td>
+            <td class="align-middle" th:text="${fish.name}"></td>
+            <td class="align-middle" th:text="${fish.price} + '₴'"></td>
+            <td class="align-middle" th:text="${fish.catchDate.toString().substring(0,10)}"></td>
             <td style="display: flex; flex-direction: row;">
                 <div class="image-container"
                      style="display: flex; flex-direction: column; margin-top: auto; margin-bottom: auto; padding-right: 2%;"
@@ -81,8 +80,9 @@
                     <img class="center-block" th:src="@{'/images/'+${data.fileName}}" alt="..." width="50"/>
                 </div>
             </td>
-            <td>
-                <a class="btn btn-danger btn-sm" th:href="@{/fish/delete(id=${fish.id})}"
+            <td class="align-middle">
+                <a sec:authorize="hasAuthority('ADMIN')" class="btn btn-danger btn-sm"
+                   th:href="@{/fish/delete(id=${fish.id})}"
                    onclick="return confirm('Ви впевнені?')">Прибрати</a>
             </td>
         </tr>

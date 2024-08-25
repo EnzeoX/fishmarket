@@ -11,7 +11,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import technikal.task.fishmarket.config.interceptor.JwtAuthorizationFilter;
+import technikal.task.fishmarket.config.filters.JwtAuthorizationFilter;
+import technikal.task.fishmarket.repository.UserRepository;
+import technikal.task.fishmarket.services.impl.UserDetailsServiceImpl;
 import technikal.task.fishmarket.utils.JwtUtils;
 
 /**
@@ -19,41 +21,25 @@ import technikal.task.fishmarket.utils.JwtUtils;
  */
 
 @Configuration
-public class AppConfig implements WebMvcConfigurer {
+public class AppConfig {
 
     @Bean
     public JwtUtils jwtUtils() {
         return new JwtUtils();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider(@Lazy UserDetailsService userDetailsService){
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(@Lazy AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-
-    @Bean
-    public JwtAuthorizationFilter jwtAuthorizationFilter(@Lazy UserDetailsService userService, JwtUtils jwtUtils) {
-        return new JwtAuthorizationFilter(jwtUtils, userService);
-    }
 
 //    @Bean
-//    public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthenticationFilterRegistrationBean(JwtAuthenticationFilter filter) {
-//        FilterRegistrationBean<JwtAuthenticationFilter> frb = new FilterRegistrationBean<>(filter);
-//        frb.setEnabled(false);
-//        return frb;
+//    public AuthenticationProvider authenticationProvider(PasswordEncoder bCryptPasswordEncoder, UserDetailsService userService) {
+//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+//        authenticationProvider.setUserDetailsService(userService);
+//        authenticationProvider.setPasswordEncoder(bCryptPasswordEncoder);
+//        return authenticationProvider;
+//    }
+//
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+//        return configuration.getAuthenticationManager();
 //    }
 
 //    @Bean

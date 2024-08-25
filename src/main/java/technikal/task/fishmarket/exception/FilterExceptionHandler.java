@@ -28,7 +28,7 @@ public class FilterExceptionHandler {
                 request.setAttribute("error", "Сессія не валідна");
                 response.addCookie(getEmptyCookie());
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.sendRedirect("/user/login");
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), "/user/login");
                 break;
             case "MalformedJwtException":
             case "AuthenticationException":
