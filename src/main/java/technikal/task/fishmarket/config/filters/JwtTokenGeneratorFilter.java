@@ -5,7 +5,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.Nullable;
@@ -16,7 +15,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import technikal.task.fishmarket.exception.exceptions.UserNotFoundException;
 import technikal.task.fishmarket.utils.JwtUtils;
 
 import java.io.IOException;
@@ -49,14 +47,10 @@ public class JwtTokenGeneratorFilter extends AbstractAuthenticationProcessingFil
         String password = obtainPassword(request);
         password = password != null ? password : "";
         UsernamePasswordAuthenticationToken authRequest = UsernamePasswordAuthenticationToken.unauthenticated(username, password);
-        Authentication authentication = null;
-        try {
-            authentication = this.getAuthenticationManager().authenticate(authRequest);
-        } catch (AuthenticationException e) {
-            this.unsuccessfulAuthentication(request, response, e);
-        }
-        return authentication;
+        return this.getAuthenticationManager().authenticate(authRequest);
     }
+
+
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
@@ -69,13 +63,6 @@ public class JwtTokenGeneratorFilter extends AbstractAuthenticationProcessingFil
 
         response.addCookie(cookie);
         response.sendRedirect("/fish");
-    }
-
-    @SneakyThrows
-    @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        throw new UserNotFoundException("Unauthorized");
     }
 
     @Nullable

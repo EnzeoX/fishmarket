@@ -21,9 +21,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
+import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 import technikal.task.fishmarket.config.filters.JwtAuthorizationFilter;
 import technikal.task.fishmarket.config.filters.JwtTokenGeneratorFilter;
 import technikal.task.fishmarket.config.handlers.CustomLogoutHandler;
@@ -58,24 +57,23 @@ public class SecurityConfig {
                     .csrf(AbstractHttpConfigurer::disable)
                     .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers(ALLOWED_URLS).permitAll()
-                            .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
-                            .requestMatchers(HttpMethod.POST, "/user/**").permitAll()
-                            .requestMatchers(HttpMethod.POST, "/fish/create").hasAuthority("ADMIN")
-                            .requestMatchers(HttpMethod.GET, "/fish/create").hasAuthority("ADMIN")
-                            .requestMatchers(HttpMethod.GET, "/fish/delete/**").hasAuthority("ADMIN")
-                            .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                            .anyRequest().authenticated()
+//                            .requestMatchers("/error/**").denyAll()
+                                    .requestMatchers(ALLOWED_URLS).permitAll()
+                                    .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
+                                    .requestMatchers(HttpMethod.POST, "/user/**").permitAll()
+                                    .requestMatchers(HttpMethod.POST, "/fish/create").hasAuthority("ADMIN")
+                                    .requestMatchers(HttpMethod.GET, "/fish/create").hasAuthority("ADMIN")
+                                    .requestMatchers(HttpMethod.GET, "/fish/delete/**").hasAuthority("ADMIN")
+                                    .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                                    .anyRequest().authenticated()
                     )
                     .logout(logout -> logout
                             .logoutUrl("/user/logout")
                             .deleteCookies(JwtUtils.JWT_COOKIE_NAME)
                             .logoutSuccessHandler(new CustomLogoutHandler())
                     )
+                    .exceptionHandling(AbstractHttpConfigurer::disable)
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .exceptionHandling(exception -> exception
-                        .accessDeniedPage("/error/403")
-                    )
                     .addFilterBefore(jwtTokenGeneratorFilter, UsernamePasswordAuthenticationFilter.class)
                     .addFilterBefore(jwtAuthorizationFilter, JwtTokenGeneratorFilter.class)
                     .addFilterBefore(filterExceptionInterceptor, WebAsyncManagerIntegrationFilter.class);

@@ -22,28 +22,30 @@ public class FilterExceptionHandler {
 
     public void handleError(HttpServletRequest request, HttpServletResponse response, Exception e) throws IOException {
         log.error("{}, error {}", this.getClass().getSimpleName(), e.getClass().getSimpleName());
-        if (e.getStackTrace() != null && e.getStackTrace().length > 0) {
-            for (StackTraceElement element : e.getStackTrace()) {
-                log.error(element.toString());
-            }
-        }
         switch (e.getClass().getSimpleName()) {
-            case "ExpiredJwtException":
+            case "ExpiredJwtException" -> {
                 request.setAttribute("error", "Сессія не валідна");
                 response.addCookie(getEmptyCookie());
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.sendRedirect("/user/login");
-                break;
-            case "MalformedJwtException":
-            case "AuthenticationException":
-            case "UsernameNotFoundException":
-            case "UnauthorizedUserException":
+            }
+            case "AccessDeniedException" -> {
+                log.warn("user tried to access endpoint without authorities");
+                response.sendRedirect("/fish");
+            }
+            case "MalformedJwtException",
+                    "AuthenticationException",
+                    "UserNotFoundException",
+                    "UsernameNotFoundException" -> {
+                log.info("User not found");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.sendRedirect("/user/login");
+            }
+            case "UnauthorizedUserException" -> {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.sendRedirect("/fish");
-                break;
-            default:
-                log.error("Default error handler");
-                break;
+            }
+            default -> log.error("Default error handler");
         }
     }
 
@@ -53,7 +55,6 @@ public class FilterExceptionHandler {
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
-
         return cookie;
     }
 }

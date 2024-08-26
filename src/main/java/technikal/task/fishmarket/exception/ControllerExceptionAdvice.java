@@ -28,10 +28,12 @@ public class ControllerExceptionAdvice {
                 redirectAttributes.addFlashAttribute("errorMessage", "Не можливо видалити цього користувача");
                 return new ModelAndView("redirect:/admin?error");
             case "HttpClientErrorException":
+                log.warn("HttpClientErrorException: {}", e.getMessage());
                 if (e instanceof HttpClientErrorException.Unauthorized) {
                     log.warn("User not authorized");
                     return new ModelAndView("error/403");
                 }
+                return new ModelAndView("redirect:/fish");
             case "NoResourceFoundException":
                 return new ModelAndView("error/404");
             case "FishCreationException":
