@@ -16,8 +16,8 @@ import java.util.List;
 
 @Slf4j
 @Controller
-@RequestMapping("/fish")
 @RequiredArgsConstructor
+@RequestMapping("/fish")
 public class FishController {
 
     private final FishService fishService;

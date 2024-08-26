@@ -5,6 +5,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.Nullable;
@@ -15,6 +16,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import technikal.task.fishmarket.exception.exceptions.UserNotFoundException;
 import technikal.task.fishmarket.utils.JwtUtils;
 
 import java.io.IOException;
@@ -41,14 +43,19 @@ public class JwtTokenGeneratorFilter extends AbstractAuthenticationProcessingFil
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        log.info("Authorization attempt");
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException {
         String username = obtainUsername(request);
         username = username != null ? username.trim() : "";
         String password = obtainPassword(request);
         password = password != null ? password : "";
         UsernamePasswordAuthenticationToken authRequest = UsernamePasswordAuthenticationToken.unauthenticated(username, password);
-        return this.getAuthenticationManager().authenticate(authRequest);
+        Authentication authentication = null;
+        try {
+            authentication = this.getAuthenticationManager().authenticate(authRequest);
+        } catch (AuthenticationException e) {
+            this.unsuccessfulAuthentication(request, response, e);
+        }
+        return authentication;
     }
 
     @Override
@@ -64,9 +71,11 @@ public class JwtTokenGeneratorFilter extends AbstractAuthenticationProcessingFil
         response.sendRedirect("/fish");
     }
 
+    @SneakyThrows
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        throw new UserNotFoundException("Unauthorized");
     }
 
     @Nullable

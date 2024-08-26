@@ -2,10 +2,12 @@ package technikal.task.fishmarket.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -21,8 +23,10 @@ public class ControllerExceptionAdvice {
         String exceptionName = e.getClass().getSimpleName();
         log.error("{}, {}", exceptionName, e.getMessage());
         // i'm using it like this because i'm on old version of Intelij Idea which doesn't support pattern matching
-        ModelAndView view;
         switch (exceptionName) {
+            case "HighAuthorityException":
+                redirectAttributes.addFlashAttribute("errorMessage", "Не можливо видалити цього користувача");
+                return new ModelAndView("redirect:/admin?error");
             case "HttpClientErrorException":
                 if (e instanceof HttpClientErrorException.Unauthorized) {
                     log.warn("User not authorized");
@@ -33,12 +37,10 @@ public class ControllerExceptionAdvice {
             case "FishCreationException":
                 return new ModelAndView("redirect:/fish/create");
             case "BadCredentialsException":
-                view = new ModelAndView("redirect:/user/login");
                 redirectAttributes.addFlashAttribute("errorMessage", "Невірний логін чи пароль");
-                return view;
+                return new ModelAndView("redirect:/user/login");
             default:
-                view = new ModelAndView("redirect:/fish");
-                return view;
+                return new ModelAndView("redirect:/fish");
         }
     }
 }

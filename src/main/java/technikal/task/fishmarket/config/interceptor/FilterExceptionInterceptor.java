@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import technikal.task.fishmarket.exception.FilterExceptionHandler;
@@ -26,8 +27,9 @@ public class FilterExceptionInterceptor extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
+            log.info("{} chain", this.getClass().getSimpleName());
             filterChain.doFilter(request, response);
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             log.error("Error occurred while processing filter chain. Message: {}", e.getMessage());
             filterExceptionHandler.handleError(request, response, e);
         }

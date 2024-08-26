@@ -32,10 +32,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Cookie[] cookies = request.getCookies();
-        log.info("Checking for cookies");
-        log.info("{}", cookies);
         if (cookies == null || cookies.length == 0) {
-            log.info("Cookies not provided at all");
             filterChain.doFilter(request, response);
             return;
         }
@@ -51,12 +48,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        log.info("JWT cookie found");
         String token = jwtCookie.getValue();
         String username = jwtUtil.extractUsername(token);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            log.info("Validating user");
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (jwtUtil.isTokenValid(token, userDetails)) {
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(

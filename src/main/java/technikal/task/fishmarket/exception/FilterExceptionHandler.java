@@ -20,7 +20,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class FilterExceptionHandler {
 
-    public void handleError(HttpServletRequest request, HttpServletResponse response, RuntimeException e) throws IOException {
+    public void handleError(HttpServletRequest request, HttpServletResponse response, Exception e) throws IOException {
         log.error("{}, error {}", this.getClass().getSimpleName(), e.getClass().getSimpleName());
         if (e.getStackTrace() != null && e.getStackTrace().length > 0) {
             for (StackTraceElement element : e.getStackTrace()) {
@@ -29,7 +29,6 @@ public class FilterExceptionHandler {
         }
         switch (e.getClass().getSimpleName()) {
             case "ExpiredJwtException":
-                log.error("Token expired");
                 request.setAttribute("error", "Сессія не валідна");
                 response.addCookie(getEmptyCookie());
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -37,13 +36,13 @@ public class FilterExceptionHandler {
                 break;
             case "MalformedJwtException":
             case "AuthenticationException":
-
             case "UsernameNotFoundException":
             case "UnauthorizedUserException":
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.sendRedirect("/fish");
                 break;
             default:
+                log.error("Default error handler");
                 break;
         }
     }

@@ -54,6 +54,9 @@
             <li sec:authorize="isAuthenticated()">
                 <a class="btn btn-info" role="button" th:href="@{/user/logout}">Вийти</a>
             </li>
+            <li sec:authorize="hasAuthority('ADMIN')">
+                <a class="btn btn-info" role="button" th:href="@{/admin}">ADMIN</a>
+            </li>
         </ul>
     </div>
 

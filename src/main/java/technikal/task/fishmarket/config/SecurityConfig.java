@@ -11,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -23,8 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import technikal.task.fishmarket.config.filters.CustomLogoutFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
 import technikal.task.fishmarket.config.filters.JwtAuthorizationFilter;
 import technikal.task.fishmarket.config.filters.JwtTokenGeneratorFilter;
 import technikal.task.fishmarket.config.handlers.CustomLogoutHandler;
@@ -65,6 +64,7 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.POST, "/fish/create").hasAuthority("ADMIN")
                             .requestMatchers(HttpMethod.GET, "/fish/create").hasAuthority("ADMIN")
                             .requestMatchers(HttpMethod.GET, "/fish/delete/**").hasAuthority("ADMIN")
+                            .requestMatchers("/admin/**").hasAuthority("ADMIN")
                             .anyRequest().authenticated()
                     )
                     .logout(logout -> logout
@@ -73,9 +73,12 @@ public class SecurityConfig {
                             .logoutSuccessHandler(new CustomLogoutHandler())
                     )
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    .exceptionHandling(exception -> exception
+                        .accessDeniedPage("/error/403")
+                    )
                     .addFilterBefore(jwtTokenGeneratorFilter, UsernamePasswordAuthenticationFilter.class)
                     .addFilterBefore(jwtAuthorizationFilter, JwtTokenGeneratorFilter.class)
-                    .addFilterBefore(filterExceptionInterceptor, LogoutFilter.class);
+                    .addFilterBefore(filterExceptionInterceptor, WebAsyncManagerIntegrationFilter.class);
 
         } else {
             // configure
