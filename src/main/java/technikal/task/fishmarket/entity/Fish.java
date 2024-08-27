@@ -30,10 +30,4 @@ public class Fish {
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "fish")
 	private List<DataFile> attachedFiles = new ArrayList<>();
-
-	public void addFile(DataFile file) {
-		file.setFish(this);
-		this.attachedFiles.add(file);
-	}
-
 }

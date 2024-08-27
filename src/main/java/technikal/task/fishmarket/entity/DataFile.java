@@ -23,13 +23,13 @@ public class DataFile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "file_name")
+    @Column(name = "file_name", nullable = false)
     private String fileName;
 
-    @Column(name = "file_type")
+    @Column(name = "file_type", nullable = false)
     private String fileType;
 
-    @Column(name = "save_date")
+    @Column(name = "save_date", nullable = false)
     private Date saveDate;
 
     @ManyToOne(cascade = CascadeType.ALL)

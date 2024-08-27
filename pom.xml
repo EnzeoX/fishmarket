@@ -29,6 +29,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<jjwt.version>0.12.5</jjwt.version>
+		<flyway.version>10.17.2</flyway.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -107,6 +108,13 @@
 			<artifactId>jjwt-jackson</artifactId>
 			<version>${jjwt.version}</version>
 		</dependency>
+
+		<!-- FLYWAY -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+			<version>${flyway.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -114,6 +122,12 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!-- FLYWAY -->
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<version>${flyway.version}</version>
 			</plugin>
 		</plugins>
 	</build>

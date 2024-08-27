@@ -30,6 +30,6 @@ public class UserEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
+    @Column(name = "role", nullable = false)
     private Role role;
 }
