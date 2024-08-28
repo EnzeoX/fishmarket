@@ -20,7 +20,7 @@ import technikal.task.fishmarket.enums.Role;
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(name = "username", unique = true, nullable = false)
