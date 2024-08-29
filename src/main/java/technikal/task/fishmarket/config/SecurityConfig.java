@@ -1,12 +1,16 @@
 package technikal.task.fishmarket.config;
 
 import jakarta.servlet.DispatcherType;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -16,10 +20,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
@@ -28,6 +35,8 @@ import technikal.task.fishmarket.config.filters.JwtTokenGeneratorFilter;
 import technikal.task.fishmarket.config.handlers.CustomLogoutHandler;
 import technikal.task.fishmarket.config.interceptor.FilterExceptionInterceptor;
 import technikal.task.fishmarket.utils.JwtUtils;
+
+import java.io.IOException;
 
 /**
  * @author Nikolay Boyko
@@ -39,7 +48,7 @@ import technikal.task.fishmarket.utils.JwtUtils;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final static String[] ALLOWED_URLS = {"/", "/favicon.ico", "/h2-console/**", "/images/**", "/fish"};
+    private final static String[] ALLOWED_URLS = {"/", "/user/**", "/favicon.ico", "/h2-console/**", "/images/**", "/fish", "/error"};
 
     @Value("${spring.security.enabled}")
     private boolean isSecurityEnabled;
@@ -58,8 +67,6 @@ public class SecurityConfig {
                     .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                     .authorizeHttpRequests(auth -> auth
                                     .requestMatchers(ALLOWED_URLS).permitAll()
-                                    .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
-                                    .requestMatchers(HttpMethod.POST, "/user/**").permitAll()
                                     .requestMatchers(HttpMethod.POST, "/fish/create").hasAuthority("ADMIN")
                                     .requestMatchers(HttpMethod.GET, "/fish/create").hasAuthority("ADMIN")
                                     .requestMatchers(HttpMethod.GET, "/fish/delete/**").hasAuthority("ADMIN")
