@@ -2,8 +2,6 @@ package technikal.task.fishmarket.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.web.DefaultRedirectStrategy;
-import org.springframework.security.web.RedirectStrategy;
 import technikal.task.fishmarket.utils.JwtUtils;
 
 /**
@@ -17,24 +15,6 @@ public class AppConfig {
     public JwtUtils jwtUtils() {
         return new JwtUtils();
     }
-
-    @Bean
-    public RedirectStrategy redirectStrategy() {
-        return new DefaultRedirectStrategy();
-    }
-
-//    @Bean
-//    public AuthenticationProvider authenticationProvider(PasswordEncoder bCryptPasswordEncoder, UserDetailsService userService) {
-//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-//        authenticationProvider.setUserDetailsService(userService);
-//        authenticationProvider.setPasswordEncoder(bCryptPasswordEncoder);
-//        return authenticationProvider;
-//    }
-//
-//    @Bean
-//    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-//        return configuration.getAuthenticationManager();
-//    }
 
 //    @Bean
 //    public LocaleResolver localeResolver() {
