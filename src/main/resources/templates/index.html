@@ -51,11 +51,11 @@
                     <h10>Вітаю, <span sec:authentication="name"></span>!</h10>
                 </div>
             </li>
-            <li sec:authorize="isAuthenticated()">
-                <a class="btn btn-info" role="button" th:href="@{/user/logout}">Вийти</a>
-            </li>
             <li sec:authorize="hasAuthority('ADMIN')">
                 <a class="btn btn-info" role="button" th:href="@{/admin}">ADMIN</a>
+            </li>
+            <li sec:authorize="isAuthenticated()">
+                <a class="btn btn-info m-2" role="button" th:href="@{/user/logout}">Вийти</a>
             </li>
         </ul>
     </div>

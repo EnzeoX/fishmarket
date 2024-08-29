@@ -28,7 +28,7 @@ public class JwtUtils {
     private String SECRET_KEY;
 
     @Value("${token.access.validity}")
-    public static int accessTokenValidity;
+    public static int accessTokenValidity = 10000;
 
     public static final String JWT_COOKIE_NAME = "jwt";
 
@@ -50,7 +50,7 @@ public class JwtUtils {
                 .claims(extraClaims)
                 .subject(username)
                 .issuedAt(Date.from(Instant.now()))
-                .expiration(Date.from(Instant.now().plusMillis(60 * 1000)))
+                .expiration(Date.from(Instant.now().plusMillis(60L * accessTokenValidity)))
                 .signWith(getSignKey())
                 .compact();
     }

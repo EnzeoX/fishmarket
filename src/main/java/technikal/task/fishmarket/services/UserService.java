@@ -1,37 +1,25 @@
 package technikal.task.fishmarket.services;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
-import org.hibernate.query.spi.Limit;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseCookie;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import technikal.task.fishmarket.dto.UserDto;
-import technikal.task.fishmarket.dto.UserForm;
 import technikal.task.fishmarket.entity.UserEntity;
 import technikal.task.fishmarket.enums.Role;
 import technikal.task.fishmarket.exception.exceptions.HighAuthorityException;
-import technikal.task.fishmarket.exception.exceptions.UserAuthErrorException;
-import technikal.task.fishmarket.handler.UserHandler;
 import technikal.task.fishmarket.repository.UserRepository;
-import technikal.task.fishmarket.utils.JwtUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Nikolay Boyko
@@ -45,6 +33,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // not a good practice to add test users like that, but anyway
     @PostConstruct
     public void addUser() {
         UserEntity entity = UserEntity.builder()
@@ -58,11 +47,30 @@ public class UserService {
                 .password(passwordEncoder.encode("2"))
                 .role(Role.ADMIN)
                 .build();
-        userRepository.save(entity);
-        log.info("Default user {} added", entity);
-        userRepository.save(entityAdmin);
-        log.info("Default admin user {} added", entityAdmin);
-
+        try {
+            userRepository.save(entity);
+            log.info("Default user {} added", entity);
+            userRepository.save(entityAdmin);
+            log.info("Default admin user {} added", entityAdmin);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Users already in db");
+        }
+//        log.info("Adding multiple random users");
+//
+//        for (int i = 0; i < 50; i++) {
+//            byte[] uByte = new byte[10];
+//            byte[] pByte = new byte[10];
+//            new Random().nextBytes(uByte);
+//            new Random().nextBytes(pByte);
+//            String username = new String(uByte, StandardCharsets.UTF_8);
+//            String password = passwordEncoder.encode(new String(pByte, StandardCharsets.UTF_8));
+//            UserEntity randomEnt = UserEntity.builder()
+//                    .username(username)
+//                    .password(password)
+//                    .role(Role.USER)
+//                    .build();
+//            userRepository.save(randomEnt);
+//        }
     }
 
     public void registerUser(String username, String password) {
@@ -74,22 +82,13 @@ public class UserService {
         userRepository.save(userEntity);
     }
 
-    public UserDto getUserByUsername(String username) {
-        UserEntity entity = userRepository.findUserByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User by username not found"));
-        return UserDto.builder()
-                .id(entity.getId())
-                .username(entity.getUsername())
-                .role(entity.getRole())
-                .build();
-    }
-
     public Page<UserDto> getPaginatedUsers(Pageable pageable) {
         int pageSize = pageable.getPageSize();
         int currentPage = pageable.getPageNumber();
-        int startItem = currentPage * pageSize;
+        long usersCount = userRepository.count();
         List<UserDto> list;
-        List<UserEntity> entities = userRepository.findByOrderByUsernameDesc(pageable);
+//        List<UserEntity> entities = userRepository.findByOrderByUsernameDesc(pageable);
+        List<UserEntity> entities = userRepository.findAll(pageable).getContent();
         if (entities == null || entities.isEmpty()) {
             log.warn("No users in database");
             return Page.empty();
@@ -101,7 +100,8 @@ public class UserService {
                             .role(entity.getRole())
                             .build())
                 .toList();
-        return new PageImpl<>(list, PageRequest.of(currentPage, pageSize), list.size());
+        PageImpl<UserDto> userDtos = new PageImpl<>(list, PageRequest.of(currentPage, pageSize), usersCount);
+        return userDtos;
     }
 
     public void deleteUser(int id) throws HighAuthorityException {

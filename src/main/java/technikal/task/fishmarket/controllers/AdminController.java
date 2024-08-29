@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +37,9 @@ public class AdminController {
                                 @RequestParam("size") Optional<Integer> size,
                                 Model model) {
         int currentPage = page.orElse(1);
-        int pageSize = size.orElse(5);
-        Page<UserDto> dtoPage = userService.getPaginatedUsers(PageRequest.of(currentPage - 1, pageSize));
+        int pageSize = size.orElse(20);
+        Page<UserDto> dtoPage = userService.getPaginatedUsers(PageRequest
+                .of(currentPage - 1, pageSize, Sort.by(Sort.Direction.DESC, "username")));
         model.addAttribute("dtoPage", dtoPage);
         int totalPages = dtoPage.getTotalPages();
         if (totalPages > 0) {

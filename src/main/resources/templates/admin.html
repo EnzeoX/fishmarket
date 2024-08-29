@@ -80,11 +80,13 @@
         </tr>
         </tbody>
     </table>
-    <div th:if="${totalPages > 0}" class="pagination d-flex flex-row justify-content-center align-items-center"
-         th:each="pageNumber : ${pageNumbers}">
-        <a class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover" th:href="@{/admin(size=${dtoPage.size}, page=${pageNumber})} "
-           th:text=${pageNumber}
-           th:class=" ${pageNumber==dtoPage.number + 1} ? active"></a>
+    <div id="pages-num" class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom bg-light">
+        <div th:if="${totalPages > 0}" class="m-2 pagination d-flex flex-row justify-content-center align-items-center"
+             th:each="pageNumber : ${pageNumbers}">
+            <a class="link-button link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover" th:href="@{/admin(size=${dtoPage.size}, page=${pageNumber})} "
+               th:text=${pageNumber}
+               th:class=" ${pageNumber==dtoPage.number + 1} ? active"></a>
+        </div>
     </div>
 </div>
 

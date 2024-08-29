@@ -21,8 +21,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
-import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 import technikal.task.fishmarket.config.filters.JwtAuthorizationFilter;
 import technikal.task.fishmarket.config.filters.JwtTokenGeneratorFilter;
 import technikal.task.fishmarket.config.handlers.CustomLogoutHandler;
@@ -35,7 +35,7 @@ import technikal.task.fishmarket.utils.JwtUtils;
 
 @Slf4j
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = false)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -57,7 +57,6 @@ public class SecurityConfig {
                     .csrf(AbstractHttpConfigurer::disable)
                     .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                     .authorizeHttpRequests(auth -> auth
-//                            .requestMatchers("/error/**").denyAll()
                                     .requestMatchers(ALLOWED_URLS).permitAll()
                                     .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
                                     .requestMatchers(HttpMethod.POST, "/user/**").permitAll()
@@ -72,7 +71,6 @@ public class SecurityConfig {
                             .deleteCookies(JwtUtils.JWT_COOKIE_NAME)
                             .logoutSuccessHandler(new CustomLogoutHandler())
                     )
-                    .exceptionHandling(AbstractHttpConfigurer::disable)
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .addFilterBefore(jwtTokenGeneratorFilter, UsernamePasswordAuthenticationFilter.class)
                     .addFilterBefore(jwtAuthorizationFilter, JwtTokenGeneratorFilter.class)
@@ -105,10 +103,6 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    //    @Bean
-//    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-//        return config.getAuthenticationManager();
-//    }
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class).build();

@@ -15,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.stereotype.Component;
 import technikal.task.fishmarket.utils.JwtUtils;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.io.IOException;
 
 @Slf4j
 @Setter
+@Component
 public class JwtTokenGeneratorFilter extends AbstractAuthenticationProcessingFilter {
 
     private static final RequestMatcher requestMatcher = new AntPathRequestMatcher("/user/login", HttpMethod.POST.name());
@@ -46,16 +48,18 @@ public class JwtTokenGeneratorFilter extends AbstractAuthenticationProcessingFil
         username = username != null ? username.trim() : "";
         String password = obtainPassword(request);
         password = password != null ? password : "";
+//        if (username == null || password == null) {
+//            return null;
+//        }
         UsernamePasswordAuthenticationToken authRequest = UsernamePasswordAuthenticationToken.unauthenticated(username, password);
         return this.getAuthenticationManager().authenticate(authRequest);
     }
 
 
-
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
         Cookie cookie = new Cookie(JwtUtils.JWT_COOKIE_NAME, jwtUtils.generateToken(authResult.getName()));
-        cookie.setMaxAge(60 * 1000);
+        cookie.setMaxAge(60 * JwtUtils.accessTokenValidity);
         cookie.setDomain("localhost");
         cookie.setHttpOnly(true);
         cookie.setSecure(true);

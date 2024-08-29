@@ -18,7 +18,7 @@ public class UserDto {
     private int id;
     private String username;
 
-    // I thinks this is not needed
+    // I think this is not needed for view
 //    private String password;
 
     private Role role;
