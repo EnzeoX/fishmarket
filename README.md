@@ -5,12 +5,12 @@ This application is using Spring Security to provide some resources only for aut
 
 Application contains 2 users by default (With ADMIN and USER roles):
 
-###Admin:
+#### Admin:
 ````
 username - 2;
 password - 2
 ````
-###Simple user
+#### Simple user
 ````
 username - 1;
 password - 1
