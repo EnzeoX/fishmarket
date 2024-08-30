@@ -48,7 +48,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final static String[] ALLOWED_URLS = {"/", "/user/**", "/favicon.ico", "/h2-console/**", "/images/**", "/fish", "/error"};
+    private final static String[] ALLOWED_URLS = {"/", "/user/**", "/favicon.ico", "/h2-console/**", "static/**", "/public/images/**", "/fish", "/error", "/images/**"};
 
     @Value("${spring.security.enabled}")
     private boolean isSecurityEnabled;
